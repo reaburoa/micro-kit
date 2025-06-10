@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package protos;
+
+option go_package = "github.com/welltop-cn/common/protos;protos";
+
+// 常量错误
+message ErrorCode {
+  int32 code = 1;
+  string title = 2;
+  string message = 3;
+}
+
+message Mysql {
+  string driver = 1;
+  string dsn = 2;
+  int64 max_idle = 4;
+  int64 max_open = 5;
+  int64 max_lifetime = 6;
+  bool is_debug = 7;
+}
+
+// 参考设置：
+// dial_timeout = 1s
+// read_timeout = 50ms
+// pool_timeout = 150ms
+// min_idle_conn = 100
+// pool_size = 50
+// max_connections = 150
+// max_idle_conn = 150
+message Redis {
+  string network = 1;
+  string addr = 2;
+  string password = 3;
+  int32 db = 4;
+  string read_timeout = 5; // 影响pool_timeout时间
+  string write_timeout = 6; // =0 时，会被赋值read_timeout参数
+  string dial_timeout = 7; // 链接超时时间
+  int32 min_idle_conn = 8; // 最小空闲链接
+  string pool_timeout = 9; // client获取空闲链接的超时时间，read_timeout >0 时，pool_timeout = read_timeout + 1s
+  string max_idle_timeout = 10; // 空闲链接最长存活时间
+  string max_conn_age = 11; // 链接最大复用时间
+  int32 max_retries = 12;
+  int32 pool_size = 13; // 链接池大小
+  int32 max_connections = 14; // 链接池满后，可以建立的最大链接数
+  int32 max_idle_conn = 15; // 最大空闲链接
+}
+
+message Elasticsearch {
+  repeated string addresses = 1;
+  string username = 2;
+  string password = 3;
+  bool is_debug = 4;
+}
+
+message Kafka {
+  string servers = 1;
+  string topic = 2;
+  repeated string topics = 3;
+  string protocol = 4;
+  string mechanism = 5;
+  string ca_location = 6;
+  string username = 7;
+  string password = 8;
+  string group_id = 9;
+  bool enable = 10;
+  map<string, string> config_map = 11;
+  string auto_offset_reset = 12; // smallest, earliest, beginning, largest, latest 消费位点
+}
+
+message Mongodb {
+  string uri = 1;
+  string mode = 2;
+  bool is_debug = 3;
+}
+
+message TracerExporter {
+  string target = 1;
+  double sample = 2; // 采样率，在0～1 之间，0 表示不采样，1 表示完全采样
+}
+
+message OssConfig {
+  string endpoint = 1;
+  string access_key_id = 2;
+  string access_key_secret = 3;
+}
+
+message Logger {
+  string path = 1; // 日志文件存储位置
+  string level = 2; // 日志级别
+  string filename = 3; // 日志文件
+  int32 max_size = 4; // 单个日志文件最大大小,单位MB,不设置为不限大小
+  int32 max_age = 5; // 日志保留时常,单位天,不设置则永久保存
+  bool is_compress = 6; // 保持文件是否进行压缩存储,压缩后,使用 gunzip 进行解压
+  int32 backup_nums = 7; // 最大保持日志文件数,不设置,则不限制
+}
