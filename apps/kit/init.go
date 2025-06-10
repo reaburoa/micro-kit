@@ -1,9 +1,9 @@
 package kit
 
 import (
-	"github.com/welltop-cn/common/cloud/config"
-	"github.com/welltop-cn/common/utils/env"
-	"github.com/welltop-cn/common/utils/log"
+	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/utils/env"
+	"github.com/reaburoa/micro-kit/utils/log"
 )
 
 func Init(serviceName string, ops ...KitOptions) error {

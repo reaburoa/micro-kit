@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/welltop-cn/common/cloud/config"
-	"github.com/welltop-cn/common/protos"
-	"github.com/welltop-cn/common/utils/env"
+	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/env"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"

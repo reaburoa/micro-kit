@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/welltop-cn/common/cloud/config"
-	"github.com/welltop-cn/common/protos"
-	"github.com/welltop-cn/common/utils/env"
+	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/env"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"

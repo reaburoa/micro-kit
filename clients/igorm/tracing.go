@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/welltop-cn/common/cloud/tracer"
+	"github.com/reaburoa/micro-kit/cloud/tracer"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"

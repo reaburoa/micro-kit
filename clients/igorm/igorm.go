@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/welltop-cn/common/cloud/config"
-	"github.com/welltop-cn/common/protos"
-	"github.com/welltop-cn/common/utils/log"
+	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

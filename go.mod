@@ -1,4 +1,4 @@
-module github.com/welltop-cn/common
+module github.com/reaburoa/micro-kit
 
 go 1.24.0
 

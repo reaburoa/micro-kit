@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/welltop-cn/common/cloud/tracer"
-	"github.com/welltop-cn/common/utils/log"
+	"github.com/reaburoa/micro-kit/cloud/tracer"
+	"github.com/reaburoa/micro-kit/utils/log"
 )
 
 type kitOptions struct {

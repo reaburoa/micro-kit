@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protos;
 
-option go_package = "github.com/welltop-cn/common/protos;protos";
+option go_package = "github.com/reaburoa/micro-kit/protos;protos";
 
 // 常量错误
 message ErrorCode {

@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/welltop-cn/common/utils/log"
+	"github.com/reaburoa/micro-kit/utils/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	otelPrometheus "go.opentelemetry.io/otel/exporters/prometheus"

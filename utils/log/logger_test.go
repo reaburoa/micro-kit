@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/welltop-cn/common/cloud/config"
+	"github.com/reaburoa/micro-kit/cloud/config"
 )
 
 func Test_logger(t *testing.T) {

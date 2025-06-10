@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/reaburoa/micro-kit/cloud/tracer"
+	"github.com/reaburoa/micro-kit/protos"
 	"github.com/redis/go-redis/v9"
-	"github.com/welltop-cn/common/cloud/tracer"
-	"github.com/welltop-cn/common/protos"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"

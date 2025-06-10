@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/welltop-cn/common/protos"
+	"github.com/reaburoa/micro-kit/protos"
 )
 
 func Test_Get(t *testing.T) {

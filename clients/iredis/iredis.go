@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/log"
 	"github.com/redis/go-redis/v9"
-	"github.com/welltop-cn/common/cloud/config"
-	"github.com/welltop-cn/common/protos"
-	"github.com/welltop-cn/common/utils/log"
 )
 
 func RedisClient(key string) (redis.Cmdable, func(), error) {

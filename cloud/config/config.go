@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
-	"github.com/welltop-cn/common/utils/env"
+	"github.com/reaburoa/micro-kit/utils/env"
 )
 
 var defaultConfig config.Config

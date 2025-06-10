@@ -7,7 +7,7 @@ import (
 
 	"github.com/felixge/fgprof"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/welltop-cn/common/utils/log"
+	"github.com/reaburoa/micro-kit/utils/log"
 )
 
 func RunMetrics() error {
