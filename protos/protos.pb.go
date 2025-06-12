@@ -873,7 +873,7 @@ const file_protos_protos_proto_rawDesc = "" +
 	"\vis_compress\x18\x06 \x01(\bR\n" +
 	"isCompress\x12\x1f\n" +
 	"\vbackup_nums\x18\a \x01(\x05R\n" +
-	"backupNumsB,Z*github.com/reaburoa/micro-kit/protos;protosb\x06proto3"
+	"backupNumsB-Z+github.com/reaburoa/micro-kit/protos;protosb\x06proto3"
 
 var (
 	file_protos_protos_proto_rawDescOnce sync.Once
