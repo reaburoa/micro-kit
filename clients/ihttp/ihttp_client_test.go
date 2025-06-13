@@ -1,15 +1,11 @@
 package ihttp
 
 import (
-	"bytes"
-	"context"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"testing"
-	"time"
 )
 
 func Md5(content string) (md string) {
@@ -17,32 +13,6 @@ func Md5(content string) (md string) {
 	h.Write([]byte(content))
 	md = fmt.Sprintf("%x", h.Sum(nil))
 	return
-}
-
-func Test_PublishDrama(t *testing.T) {
-	// exporter, _ := tracer.TraceExporterWithStdout()
-	// shutdown, _ := tracer.InitProvider(exporter, 0)
-	// defer shutdown(context.Background())
-
-	dramaIds := []int64{
-		85446598,
-	}
-
-	headers := map[string]string{
-		"access-token": "a25fdb1d-9f5e-461b-b6bc-d114ca46a9ab",
-	}
-
-	for _, dId := range dramaIds {
-		params := map[string]int64{
-			"id": dId,
-		}
-		sendData, _ := json.Marshal(params)
-		fmt.Println("to publish drama: ", string(sendData))
-		resp, _ := PostJson(context.Background(), "https://pre-api.welltop.tech/api/v3/ops/content/series/publish", bytes.NewBuffer(sendData), 3*time.Second, headers)
-		defer resp.Body.Close()
-		body, er := io.ReadAll(resp.Body)
-		fmt.Println("publish response ", string(body), er)
-	}
 }
 
 type Callback struct {
