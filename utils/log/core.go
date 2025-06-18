@@ -41,7 +41,7 @@ func initLog(conf *protos.Logger, options ...zap.Option) *zap.Logger {
 		zap.AddCaller(),   // 开启开发模式，堆栈跟踪
 		zap.Development(), // 开启文件及行号
 		zap.Fields(zap.String("service", env.ServiceName())), // 设置初始化字段
-		zap.AddCallerSkip(1), // 默认跳过一层
+		zap.AddCallerSkip(2), // 默认跳过一层
 	)
 	ops = append(ops, options...)
 	logger := zap.New(core, ops...)

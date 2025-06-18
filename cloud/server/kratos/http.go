@@ -1,4 +1,4 @@
-package server
+package kratos
 
 import (
 	"fmt"
@@ -6,62 +6,61 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	kmid "github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
+	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/cloud/server"
 	middleware "github.com/reaburoa/micro-kit/middleware/kratos"
+	krtosLog "github.com/reaburoa/micro-kit/utils/log/kratos"
 )
 
 const (
-	HTTPDefaultAddr    = "0.0.0.0:8080"
-	HTTPDefaultTimeout = 3000 * time.Millisecond
+	httpDefaultAddr    = ":8080"
+	httpDefaultTimeout = 3000 * time.Millisecond
 )
 
-var DefaultMiddlewares = []kmid.Middleware{
-	// recovery.Recovery(recovery.WithLogger(logs.GetAccessLog())),
-	// metrics.Server(
-	// 	metrics.WithSeconds(prom.NewHistogram(metrics2.ServerMetricSeconds)),
-	// 	metrics.WithRequests(prom.NewCounter(metrics2.ServerMetricRequests)),
-	// ),
-	// tracing.Server(
-	// 	tracing.WithPropagator(propagation.NewCompositeTextMapPropagator(
-	// 		tracing.Metadata{}, propagation.TraceContext{}, propagation.Baggage{})),
-	// ),
-	// middleware.ServerIErrorMiddleware(),
-	// metadata.Server(),
-	// middleware.AccessLogMiddleware(),
-	// validate.Validator(),
-	// ratelimit.Server(),
-	// middleware.CommonHeaderMiddleware(),
+func NewHttp(middleware ...kmid.Middleware) *http.Server {
+	return NewHttpWithName("http", middleware...)
 }
 
-func AddMiddleware(middlewares ...kmid.Middleware) {
-	DefaultMiddlewares = append(DefaultMiddlewares, middlewares...)
-}
-
-func NewHttp(ops ...http.ServerOption) *http.Server {
-	return NewHttpWithName("http", ops...)
-}
-
-func NewHttpWithName(srv string, ops ...http.ServerOption) *http.Server {
+func NewHttpWithName(srv string, middleware ...kmid.Middleware) *http.Server {
 	var cfg server.Server
 	if err := config.Get(fmt.Sprintf("server.%s", srv)).Scan(&cfg); err != nil {
 		log.Fatalf("parse http %s config with error %s", srv, err.Error())
 	}
 
-	return newHttp(&cfg, ops...)
+	return newHttp(&cfg, middleware...)
 }
 
-func newHttp(conf *server.Server, ops ...http.ServerOption) *http.Server {
-	ops = append([]http.ServerOption{
-		http.Middleware(DefaultMiddlewares...),
+func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
+	serverMiddleware := []kmid.Middleware{
+		recovery.Recovery(),
+		metrics.Server(
+			metrics.WithRequests(middleware.MetricsRequests()),
+			metrics.WithSeconds(middleware.MetricsSeconds()),
+		),
+		tracing.Server(),
+		logging.Server(krtosLog.NewKratosLog()),
+		validate.Validator(),
+		ratelimit.Server(),
+	}
+	if len(kmiddleware) > 0 {
+		serverMiddleware = append(serverMiddleware, kmiddleware...)
+	}
+
+	ops := []http.ServerOption{
+		http.Middleware(serverMiddleware...),
 		http.ResponseEncoder(middleware.CommonResponseFunc),
 		http.ErrorEncoder(middleware.CommonErrorEncoder),
-		http.Logger(log.DefaultLogger),
-		http.Address(HTTPDefaultAddr),
-		http.Timeout(HTTPDefaultTimeout),
-	}, ops...)
-
+		http.Logger(krtosLog.NewKratosLog()),
+		http.Address(httpDefaultAddr),
+		http.Timeout(httpDefaultTimeout),
+	}
 	if conf.Network != "" {
 		ops = append(ops, http.Network(conf.Network))
 	}
@@ -76,6 +75,16 @@ func newHttp(conf *server.Server, ops ...http.ServerOption) *http.Server {
 		ops = append(ops, http.Timeout(duration))
 	}
 	srv := http.NewServer(ops...)
+
+	err := server.RunMetrics()
+	if err != nil {
+		log.Fatalf("running metrics failed with %s", err.Error())
+	}
+
+	err = server.RunPprof()
+	if err != nil {
+		log.Fatalf("running monitor failed with %s", err.Error())
+	}
 
 	return srv
 }

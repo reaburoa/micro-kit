@@ -2,6 +2,7 @@ package kit
 
 import (
 	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/cloud/metrics"
 	"github.com/reaburoa/micro-kit/utils/env"
 	"github.com/reaburoa/micro-kit/utils/log"
 )
@@ -16,7 +17,7 @@ func Init(serviceName string, ops ...KitOptions) error {
 
 	log.InitLogger()
 
-	//	metrics.InitMetrics(kitOps.serviceName)
+	metrics.InitMetrics(kitOps.serviceName)
 
 	for _, o := range ops {
 		o(kitOps)

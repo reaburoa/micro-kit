@@ -12,19 +12,23 @@ func NewKratosLog() *KratosLog {
 	return &KratosLog{}
 }
 
+const (
+	kratosLogMsgKey = "kratos-log"
+)
+
 // Log 实现kratos的logger接口.
 func (t *KratosLog) Log(level kratosLog.Level, keyvals ...interface{}) error {
 	switch level {
 	case kratosLog.LevelDebug:
-		log.Debug(keyvals...)
+		log.Debugw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelInfo:
-		log.Info(keyvals...)
+		log.Infow(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelWarn:
-		log.Warn(keyvals...)
+		log.Warnw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelError:
-		log.Error(keyvals...)
+		log.Errorw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelFatal:
-		log.Fatal(keyvals...)
+		log.Fatalw(kratosLogMsgKey, keyvals...)
 	}
 	return nil
 }
