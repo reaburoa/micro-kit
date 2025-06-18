@@ -1,7 +1,8 @@
-package log
+package kratos
 
 import (
 	kratosLog "github.com/go-kratos/kratos/v2/log"
+	"github.com/reaburoa/micro-kit/utils/log"
 )
 
 type KratosLog struct {
@@ -15,15 +16,15 @@ func NewKratosLog() *KratosLog {
 func (t *KratosLog) Log(level kratosLog.Level, keyvals ...interface{}) error {
 	switch level {
 	case kratosLog.LevelDebug:
-		Debug(keyvals...)
+		log.Debug(keyvals...)
 	case kratosLog.LevelInfo:
-		Info(keyvals...)
+		log.Info(keyvals...)
 	case kratosLog.LevelWarn:
-		Warn(keyvals...)
+		log.Warn(keyvals...)
 	case kratosLog.LevelError:
-		Error(keyvals...)
+		log.Error(keyvals...)
 	case kratosLog.LevelFatal:
-		Fatal(keyvals...)
+		log.Fatal(keyvals...)
 	}
 	return nil
 }
