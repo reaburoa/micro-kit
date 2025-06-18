@@ -14,22 +14,22 @@ const (
 )
 
 type BaseHTTPResponse struct {
-	ErrorCode *int32      `json:"error_code,omitempty"`
-	ErrorMsg  string      `json:"error_msg,omitempty"`
-	Data      interface{} `json:"data,omitempty"`
+	Code    int32       `json:"code,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func Success(v interface{}) *BaseHTTPResponse {
 	code := successCode
-	return &BaseHTTPResponse{&code, "success", v}
+	return &BaseHTTPResponse{code, "success", v}
 }
 
 func (e *BaseHTTPResponse) Error() string {
-	return fmt.Sprintf("HTTPError code: %d message: %s", e.ErrorCode, e.ErrorMsg)
+	return fmt.Sprintf("code: %d message: %s", e.Code, e.Message)
 }
 
 func Error(errCode int32, errMsg string) *BaseHTTPResponse {
-	return &BaseHTTPResponse{&errCode, errMsg, nil}
+	return &BaseHTTPResponse{errCode, errMsg, nil}
 }
 
 func CommonResponseFunc(w http.ResponseWriter, request *http.Request, v interface{}) error {
