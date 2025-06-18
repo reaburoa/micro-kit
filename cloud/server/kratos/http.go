@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-kratos/kratos/contrib/middleware/validate/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	kmid "github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -11,7 +12,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"github.com/go-kratos/kratos/v2/middleware/validate"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/cloud/server"
@@ -46,7 +46,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		),
 		tracing.Server(),
 		logging.Server(krtosLog.NewKratosLog()),
-		validate.Validator(),
+		validate.ProtoValidate(),
 		ratelimit.Server(),
 	}
 	if len(kmiddleware) > 0 {
