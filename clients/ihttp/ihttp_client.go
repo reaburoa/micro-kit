@@ -22,7 +22,7 @@ import (
 var (
 	// 默认Transport
 	defaultTrans = &http.Transport{
-		ResponseHeaderTimeout: 5 * time.Second,
+		ResponseHeaderTimeout: 90 * time.Second,
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			KeepAlive: 90 * time.Second,
