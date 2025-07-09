@@ -2,14 +2,17 @@ package kratos
 
 import (
 	kratosLog "github.com/go-kratos/kratos/v2/log"
-	"github.com/reaburoa/micro-kit/utils/log"
+	"go.uber.org/zap"
 )
 
 type KratosLog struct {
+	logger *zap.Logger
 }
 
 func NewKratosLog() *KratosLog {
-	return &KratosLog{}
+	return &KratosLog{
+		logger: zap.S().Desugar().WithOptions(zap.AddCallerSkip(-2)),
+	}
 }
 
 const (
@@ -20,15 +23,15 @@ const (
 func (t *KratosLog) Log(level kratosLog.Level, keyvals ...interface{}) error {
 	switch level {
 	case kratosLog.LevelDebug:
-		log.Debugw(kratosLogMsgKey, keyvals...)
+		t.logger.Sugar().Debugw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelInfo:
-		log.Infow(kratosLogMsgKey, keyvals...)
+		t.logger.Sugar().Infow(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelWarn:
-		log.Warnw(kratosLogMsgKey, keyvals...)
+		t.logger.Sugar().Warnw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelError:
-		log.Errorw(kratosLogMsgKey, keyvals...)
+		t.logger.Sugar().Errorw(kratosLogMsgKey, keyvals...)
 	case kratosLog.LevelFatal:
-		log.Fatalw(kratosLogMsgKey, keyvals...)
+		t.logger.Sugar().Fatalw(kratosLogMsgKey, keyvals...)
 	}
 	return nil
 }
