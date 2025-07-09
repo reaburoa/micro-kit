@@ -75,6 +75,7 @@ func getEncoder() zapcore.Encoder {
 func getLumberJackLogger(logConf *protos.Logger) *lumberjack.Logger {
 	jackLogger := &lumberjack.Logger{
 		LocalTime: true,
+		Compress:  true,
 	}
 	logFilename := fmt.Sprintf("%s.%s", "logs/app.log", time.Now().Format("20060102"))
 	if logConf.Path != "" && logConf.Filename != "" {
