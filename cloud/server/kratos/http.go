@@ -45,6 +45,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 			metrics.WithSeconds(middleware.MetricsSeconds()),
 		),
 		tracing.Server(),
+		middleware.ServerErrorMiddleware(),
 		logging.Server(krtosLog.NewKratosLog()),
 		validate.ProtoValidate(),
 		ratelimit.Server(),

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/reaburoa/micro-kit/errors"
 )
 
 func ClientIErrorMiddleware() middleware.Middleware {
@@ -22,16 +23,12 @@ func ClientIErrorMiddleware() middleware.Middleware {
 	}
 }
 
-func ServerIErrorMiddleware() middleware.Middleware {
+func ServerErrorMiddleware() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			reply, err = handler(ctx, req)
 			if err != nil {
-				// ierror convert to kratos error
-				// if !ierrors.IsIError(err) {
-				// 	return
-				// }
-				// err = ierrors.ConvertToKratosError(err)
+				err = errors.ConvertToKratosError(err)
 			}
 			return
 		}
