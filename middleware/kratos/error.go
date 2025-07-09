@@ -7,16 +7,12 @@ import (
 	"github.com/reaburoa/micro-kit/errors"
 )
 
-func ClientIErrorMiddleware() middleware.Middleware {
+func ClientErrorMiddleware() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			reply, err = handler(ctx, req)
 			if err != nil {
-				// kratos error convert to ierror
-				// if ierrors.IsIError(err) {
-				// 	return
-				// }
-				// err, _ = ierrors.ConvertToIError(errors.FromError(err))
+				err = errors.ConvertToKratosError(err)
 			}
 			return
 		}

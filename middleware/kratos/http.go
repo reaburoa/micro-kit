@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/encoding"
+	"github.com/reaburoa/micro-kit/errors"
 )
 
 const (
@@ -44,18 +45,16 @@ func CommonResponseFunc(w http.ResponseWriter, request *http.Request, v interfac
 }
 
 func CommonErrorEncoder(w http.ResponseWriter, r *http.Request, err error) {
-	// errCode := ierrors.Code(err)
-	// errMsg := ierrors.Msg(err)
-	var errCode int32 = 0
-	errMsg := ""
+	errCode := errors.Code(err)
+	errMsg := errors.Message(err)
 	codec, _ := CodecForRequest(r, "Accept")
-	body, err := codec.Marshal(Error(errCode, errMsg))
+	body, err := codec.Marshal(Error(int32(errCode), errMsg))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", ContentType(codec.Name()))
-	if errCode >= 400 && errCode < 500 {
+	if errCode >= 400 && errCode <= 500 {
 		w.WriteHeader(int(errCode))
 	}
 	_, _ = w.Write(body)

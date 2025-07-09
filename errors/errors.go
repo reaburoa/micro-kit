@@ -5,39 +5,48 @@ import (
 )
 
 type KitError struct {
-	code    int    `json:"code"`
-	message string `json:"message"`
-	reason  string `json:"reason"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Reason  string `json:"reason"`
 }
 
 func (e *KitError) Error() string {
-	return fmt.Sprintf("code: %d, message: %s", e.code, e.message)
+	return fmt.Sprintf("code: %d, reason: %s, message: %s", e.Code, e.Reason, e.Message)
 }
 
-func (e *KitError) Code() int {
-	return e.code
+func (e *KitError) GetCode() int {
+	if e != nil {
+		return e.Code
+	}
+	return 0
 }
 
-func (e *KitError) Message() string {
-	return e.message
+func (e *KitError) GetMessage() string {
+	if e != nil {
+		return e.Message
+	}
+	return ""
 }
 
-func (e *KitError) Reason() string {
-	return e.reason
+func (e *KitError) GetReason() string {
+	if e != nil {
+		return e.Reason
+	}
+	return ""
 }
 
 func New(code int, message, reason string) *KitError {
 	return &KitError{
-		code:    code,
-		message: message,
-		reason:  reason,
+		Code:    code,
+		Message: message,
+		Reason:  reason,
 	}
 }
 
 func Errorf(code int, format string, args ...interface{}) error {
 	return &KitError{
-		code:    code,
-		message: fmt.Sprintf(format, args...),
+		Code:    code,
+		Message: fmt.Sprintf(format, args...),
 	}
 }
 
