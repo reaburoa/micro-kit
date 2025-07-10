@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	domain = "listenbook"
+	domain = "micro-kit"
 )
 
 var (
@@ -31,10 +31,7 @@ func InitOtelTracer() (func(context.Context) error, error) {
 		err      error
 		exporter sdktrace.SpanExporter
 	)
-	cfg, cfgErr := GetExporterConfig()
-	if cfgErr != nil {
-		//log.L().Errorf("get trace exporter config: %#v", cfgErr)
-	}
+	cfg := GetExporterConfig()
 	if !env.IsDebug() {
 		exporter, err = TraceExporterWithGrpc(context.Background(), cfg.Target)
 	} else {
@@ -102,12 +99,11 @@ func GetTracer() trace.Tracer {
 	return otel.Tracer(env.ServiceName())
 }
 
-func GetExporterConfig() (*protos.TracerExporter, error) {
-	var cfg *protos.TracerExporter
-	err := config.Get("tracer").Scan(&cfg)
-	if err != nil {
-		return nil, err
+func GetExporterConfig() *protos.TracerExporter {
+	var cfg = &protos.TracerExporter{
+		Target: "",
+		Sample: 1,
 	}
-
-	return cfg, nil
+	_ = config.Get("tracer").Scan(&cfg)
+	return cfg
 }

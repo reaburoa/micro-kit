@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	CN   Region = "cn"
-	US01 Region = "us01"
+	CN Region = "cn"
+	US Region = "us"
 )
 
 var (
@@ -56,12 +56,12 @@ func IsRegionCN() bool {
 	return GetRuntimeRegion() == CN
 }
 
-func IsUs01Pre() bool {
-	return GetRuntimeRegion() == US01 && GetRuntimeEnv() == Pre
+func IsUsPre() bool {
+	return GetRuntimeRegion() == US && GetRuntimeEnv() == Pre
 }
 
-func IsUs01Prod() bool {
-	return GetRuntimeRegion() == US01 && GetRuntimeEnv() == Prod
+func IsUsProd() bool {
+	return GetRuntimeRegion() == US && GetRuntimeEnv() == Prod
 }
 
 func IsRelease() bool {

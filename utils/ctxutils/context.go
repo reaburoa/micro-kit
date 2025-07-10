@@ -1,3 +1,8 @@
 package ctxutils
 
-type contextParameter struct{}
+type ContextKey string
+
+const (
+	CtxUserIpKey ContextKey = "UserClientIp"
+	CtxUserIdKey ContextKey = "AuthUerId"
+)

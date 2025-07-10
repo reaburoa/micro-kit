@@ -8,6 +8,8 @@ import (
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/reaburoa/micro-kit/errors"
+	"github.com/reaburoa/micro-kit/utils/ctxutils"
 	"github.com/reaburoa/micro-kit/utils/log"
 )
 
@@ -18,7 +20,7 @@ func AccessLogMiddleware() middleware.Middleware {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			start := time.Now()
 			var (
-				code      int32
+				code      int
 				message   string
 				accessLog = make(map[string]interface{}, 10)
 			)
@@ -29,29 +31,30 @@ func AccessLogMiddleware() middleware.Middleware {
 					"user-agent": getUa(tr.RequestHeader()),
 					"remote":     userIp,
 					//"app-version": ctxutil.GetCommonHeader(ctx, ctxutil.CommonHeaderAppVersion),
-					"trace_id":   tr.RequestHeader().Get("Trace_id"),
+					"request_id": tr.RequestHeader().Get("Request-Id"),
 					"user-token": tr.RequestHeader().Get("Token"),
 					"X-Scheme":   tr.RequestHeader().Get("X-Scheme"),
 					"kind":       tr.Kind().String(),
 					"endpoint":   tr.Endpoint(),
 					"kind_type":  "server",
 				}
-				//ctx = context.WithValue(ctx, ctxutil.CtxUserIpKey, userIp)
+				ctx = context.WithValue(ctx, ctxutils.CtxUserIpKey, userIp)
 			}
 			reply, err = handler(ctx, req)
-			// if err != nil {
-			// 	code = ierrors.Code(err)
-			// 	message = ierrors.Msg(err)
-			// }
+			if err != nil {
+				code = errors.Code(err)
+				message = errors.Message(err)
+			}
 			accessLog["args"] = extractArgs(req)
 			accessLog["respCode"] = code
 			accessLog["respMsg"] = message
-			// if accessLog["trace_id"] == "" {
-			// 	accessLog["trace_id"] = ctxutil.GetTraceID(ctx)
-			// }
 			defer func(begin time.Time) {
-				accessLog["request_time"] = time.Since(begin).Seconds()
-				log.CtxInfof(ctx, "accessLog %#v", accessLog)
+				accessLog["latency"] = time.Since(begin).Seconds()
+				aclogs := make([]interface{}, 0, len(accessLog))
+				for key, value := range accessLog {
+					aclogs = append(aclogs, key, value)
+				}
+				log.CtxInfow(ctx, "accessLog", aclogs...)
 			}(start)
 			return
 		}
@@ -63,30 +66,33 @@ func ClientCallLogMiddleware() middleware.Middleware {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			start := time.Now()
 			var (
-				code    int32
-				message string
-				callLog = make(map[string]interface{}, 10)
+				code      int
+				message   string
+				clientLog = make(map[string]interface{}, 10)
 			)
 			if tr, ok := transport.FromClientContext(ctx); ok {
-				callLog = map[string]interface{}{
+				clientLog = map[string]interface{}{
 					"proto":     tr.Operation(),
 					"kind":      tr.Kind().String(),
 					"endpoint":  tr.Endpoint(),
 					"kind_type": "client",
-					//"trace_id":  ctxutil.GetTraceID(ctx),
 				}
 			}
 			reply, err = handler(ctx, req)
-			// if err != nil {
-			// 	code = ierrors.Code(err)
-			// 	message = ierrors.Msg(err)
-			// }
-			callLog["args"] = extractArgs(req)
-			callLog["respCode"] = code
-			callLog["respMsg"] = message
+			if err != nil {
+				code = errors.Code(err)
+				message = errors.Message(err)
+			}
+			clientLog["args"] = extractArgs(req)
+			clientLog["respCode"] = code
+			clientLog["respMsg"] = message
 			defer func(begin time.Time) {
-				callLog["request_time"] = time.Since(begin).Seconds()
-				log.CtxInfof(ctx, "callLog %#v", callLog)
+				clientLog["latency"] = time.Since(begin).Seconds()
+				cllogs := make([]interface{}, 0, len(clientLog))
+				for key, value := range clientLog {
+					cllogs = append(cllogs, key, value)
+				}
+				log.CtxInfow(ctx, "callLog", cllogs...)
 			}(start)
 
 			return

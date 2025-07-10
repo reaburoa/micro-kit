@@ -69,53 +69,82 @@ func buildCtxField(ctx context.Context) []zap.Field {
 	return zapFields
 }
 
+func ctxLog(ctx context.Context, level Level, template string, args ...interface{}) {
+	zapLevel := Level2ZapLevle(level)
+	msg := getMessage(template, args)
+	kvs := make([]interface{}, 0, 20)
+	for _, value := range buildCtxField(ctx) {
+		kvs = append(kvs, value.Key, value.Interface)
+	}
+	zap.S().Logw(zapLevel, msg, kvs...)
+}
+
+func ctxLogW(ctx context.Context, level Level, msg string, keysAndValues ...interface{}) {
+	zapLevel := Level2ZapLevle(level)
+	kvs := make([]interface{}, 0, 20)
+	kvs = append(kvs, keysAndValues...)
+	for _, value := range buildCtxField(ctx) {
+		kvs = append(kvs, value.Key, value.Interface)
+	}
+	zap.S().Logw(zapLevel, msg, kvs...)
+}
+
 func CtxDebug(ctx context.Context, a ...interface{}) {
-	msg := getMessage("", a)
-	zap.L().Debug(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, DebugLevel, "", a...)
 }
 
 func CtxDebugf(ctx context.Context, format string, a ...interface{}) {
-	msg := getMessage(format, a)
-	zap.L().Debug(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, DebugLevel, format, a...)
+}
+
+func CtxDebugw(ctx context.Context, msg string, a ...interface{}) {
+	ctxLogW(ctx, DebugLevel, msg, a...)
 }
 
 func CtxInfo(ctx context.Context, a ...interface{}) {
-	msg := getMessage("", a)
-	zap.L().Info(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, InfoLevel, "", a...)
 }
 
-// // CtxInfof uses fmt.Sprintf to log a templated message.
 func CtxInfof(ctx context.Context, format string, a ...interface{}) {
-	msg := getMessage(format, a)
-	zap.L().Info(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, InfoLevel, format, a...)
+}
+
+func CtxInfow(ctx context.Context, msg string, a ...interface{}) {
+	ctxLogW(ctx, InfoLevel, msg, a...)
 }
 
 func CtxWarn(ctx context.Context, a ...interface{}) {
-	msg := getMessage("", a)
-	zap.L().Warn(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, WarnLevel, "", a...)
 }
 
 func CtxWarnf(ctx context.Context, format string, a ...interface{}) {
-	msg := getMessage(format, a)
-	zap.L().Warn(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, WarnLevel, format, a...)
+}
+
+func CtxWarnw(ctx context.Context, msg string, a ...interface{}) {
+	ctxLogW(ctx, WarnLevel, msg, a...)
 }
 
 func CtxError(ctx context.Context, a ...interface{}) {
-	msg := getMessage("", a)
-	zap.L().Error(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, ErrorLevel, "", a...)
 }
 
 func CtxErrorf(ctx context.Context, format string, a ...interface{}) {
-	msg := getMessage(format, a)
-	zap.L().Error(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, ErrorLevel, format, a...)
+}
+
+func CtxErrorw(ctx context.Context, msg string, a ...interface{}) {
+	ctxLogW(ctx, ErrorLevel, msg, a...)
 }
 
 func CtxFatal(ctx context.Context, a ...interface{}) {
-	msg := getMessage("", a)
-	zap.L().Fatal(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, FatalLevel, "", a...)
 }
 
 func CtxFatalf(ctx context.Context, format string, a ...interface{}) {
-	msg := getMessage(format, a)
-	zap.L().Fatal(msg, buildCtxField(ctx)...)
+	ctxLog(ctx, FatalLevel, format, a...)
+}
+
+func CtxFatalw(ctx context.Context, msg string, a ...interface{}) {
+	ctxLogW(ctx, FatalLevel, msg, a...)
 }
