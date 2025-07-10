@@ -65,5 +65,15 @@ func newGrpc(conf *server.Server, opts ...grpc.ServerOption) *grpc.Server {
 		opts = append(opts, grpc.Timeout(duration))
 	}
 	srv := grpc.NewServer(opts...)
+
+	err := server.RunMetrics()
+	if err != nil {
+		log.Fatalf("running metrics failed with %s", err.Error())
+	}
+
+	err = server.RunPprof()
+	if err != nil {
+		log.Fatalf("running monitor failed with %s", err.Error())
+	}
 	return srv
 }
