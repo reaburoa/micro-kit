@@ -19,7 +19,7 @@ func ConvertToKratosError(err error) error {
 	return kErr
 }
 
-func ConvertToIError(kerr *kratosErr.Error) (error, bool) {
+func ConvertToKitError(kerr *kratosErr.Error) (error, bool) {
 	return New(int(kerr.Code), kerr.Reason, kerr.Message), true
 }
 

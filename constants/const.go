@@ -1,35 +1,39 @@
 package constants
 
 const (
-	PlatformAndroid = 1
-	PlatformIOS     = 2
+	PlatformAndroidCode = 1
+	PlatformIOSCode     = 2
+	PlatformWEBCode     = 3
 
-	PlatformAndroidStr = "android"
-	PlatformIOSStr     = "ios"
+	PlatformAndroidDesc = "android"
+	PlatformIOSDesc     = "ios"
+	PlatformWEBDesc     = "web"
 )
 
 var (
 	PlatformCodeDescMap = map[int]string{
-		PlatformAndroid: PlatformAndroidStr,
-		PlatformIOS:     PlatformIOSStr,
+		PlatformAndroidCode: PlatformAndroidDesc,
+		PlatformIOSCode:     PlatformIOSDesc,
+		PlatformWEBCode:     PlatformWEBDesc,
 	}
 
 	PlatformDescCodeMap = map[string]int{
-		PlatformAndroidStr: PlatformAndroid,
-		PlatformIOSStr:     PlatformIOS,
+		PlatformAndroidDesc: PlatformAndroidCode,
+		PlatformIOSDesc:     PlatformIOSCode,
+		PlatformWEBDesc:     PlatformWEBCode,
 	}
 )
 
-func CovertPlatformStr(platform int) string {
+func CovertPlatformDesc(platform int) string {
 	if p, ok := PlatformCodeDescMap[platform]; ok {
 		return p
 	}
-	return PlatformAndroidStr
+	return PlatformAndroidDesc
 }
 
-func CovertPlatformInt(platform string) int {
+func CovertPlatformCode(platform string) int {
 	if code, ok := PlatformDescCodeMap[platform]; ok {
 		return code
 	}
-	return PlatformAndroid
+	return PlatformAndroidCode
 }
