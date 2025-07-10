@@ -7,6 +7,7 @@ import (
 	"github.com/go-kratos/kratos/contrib/middleware/validate/v2"
 	kmid "github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/metadata"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -49,6 +50,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		logging.Server(krtosLog.NewKratosLog()),
 		validate.ProtoValidate(),
 		ratelimit.Server(),
+		metadata.Server(),
 	}
 	if len(kmiddleware) > 0 {
 		serverMiddleware = append(serverMiddleware, kmiddleware...)

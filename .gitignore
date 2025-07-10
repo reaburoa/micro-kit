@@ -65,10 +65,8 @@ sonar.sh
 test.json
 **/main
 **/demo
-configs/test
 cover.out
 openapi.yaml
 test.json
-/configs
 *.log
 runtime

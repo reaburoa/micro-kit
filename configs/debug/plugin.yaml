@@ -1,0 +1,13 @@
+server_configs:
+  - ip_addr: "mse-917ff280-nacos-ans.mse.aliyuncs.com"
+    port: 8848
+client_config:
+  namespace_id: "11d92706-4ea8-4a66-a2a1-e1f8690c8c98"
+  timeout_ms: 5000
+  log_dir: "/tmp/nacos/log"
+  cache_dir: "/tmp/nacos/cache"
+  rotate_time: "1h"
+  max_age: 3
+  log_level: "debug"
+  access_key: "${NACOS_ACCESS_KEY_917ff280}"
+  secret_key: "${NACOS_SECRET_KEY_917ff280}"
