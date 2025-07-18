@@ -126,30 +126,30 @@ func Infow(msg string, keysAndValues ...interface{}) {
 // Warnw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func Warnw(msg string, keysAndValues ...interface{}) {
-	zap.S().Warnw(msg, keysAndValues)
+	zap.S().Warnw(msg, keysAndValues...)
 }
 
 // Errorw logs a message with some additional context. The variadic key-value
 // pairs are treated as they are in With.
 func Errorw(msg string, keysAndValues ...interface{}) {
-	zap.S().Errorw(msg, keysAndValues)
+	zap.S().Errorw(msg, keysAndValues...)
 }
 
 // DPanicw logs a message with some additional context. In development, the
 // logger then panics. (See DPanicLevel for details.) The variadic key-value
 // pairs are treated as they are in With.
 func DPanicw(msg string, keysAndValues ...interface{}) {
-	zap.S().DPanicw(msg, keysAndValues)
+	zap.S().DPanicw(msg, keysAndValues...)
 }
 
 // Panicw logs a message with some additional context, then panics. The
 // variadic key-value pairs are treated as they are in With.
 func Panicw(msg string, keysAndValues ...interface{}) {
-	zap.S().Panicw(msg, keysAndValues)
+	zap.S().Panicw(msg, keysAndValues...)
 }
 
 // Fatalw logs a message with some additional context, then calls os.Exit. The
 // variadic key-value pairs are treated as they are in With.
 func Fatalw(msg string, keysAndValues ...interface{}) {
-	zap.S().Fatalw(msg, keysAndValues)
+	zap.S().Fatalw(msg, keysAndValues...)
 }
