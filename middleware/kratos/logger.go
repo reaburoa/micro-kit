@@ -61,7 +61,7 @@ func AccessLogMiddleware() middleware.Middleware {
 	}
 }
 
-func ClientCallLogMiddleware() middleware.Middleware {
+func RequestLogMiddleware() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			start := time.Now()
