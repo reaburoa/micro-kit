@@ -9,6 +9,7 @@ import (
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/protos"
 	"github.com/reaburoa/micro-kit/utils/env"
+	"github.com/reaburoa/micro-kit/utils/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
@@ -38,15 +39,18 @@ func InitOtelTracer() (func(context.Context) error, error) {
 		exporter, err = TraceExporterWithStdout()
 	}
 	if err != nil {
-		//log.L().Errorf("failed to create trace exporter: %#v", err)
+		log.Errorf("failed to create trace exporter: %#v", err)
 		return nil, err
 	}
-	return InitProvider(exporter, cfg.Sample)
+	return InitProvider(exporter, cfg)
 }
 
 // Initializes an OTLP exporter, and configures the corresponding trace providers.
-func InitProvider(exporter sdktrace.SpanExporter, sampleRate float64) (func(context.Context) error, error) {
+func InitProvider(exporter sdktrace.SpanExporter, config *protos.TracerExporter) (func(context.Context) error, error) {
 	traceService := os.Getenv("JAEGER_SERVICE_NAME")
+	if config.ServiceName != "" {
+		traceService = config.ServiceName
+	}
 	if traceService == "" {
 		traceService = fmt.Sprintf("%s-%s", domain, env.ServiceName())
 	}
@@ -67,8 +71,8 @@ func InitProvider(exporter sdktrace.SpanExporter, sampleRate float64) (func(cont
 		sdktrace.WithBatchTimeout(time.Second * 3),
 	}
 	sample := sdktrace.ParentBased(sdktrace.AlwaysSample())
-	if env.IsRelease() && sampleRate > 0 {
-		sample = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(sampleRate))
+	if env.IsRelease() && config.Sample > 0 {
+		sample = sdktrace.ParentBased(sdktrace.TraceIDRatioBased(config.Sample))
 	}
 	// Register the trace exporter with a TracerProvider, using a batch
 	// span processor to aggregate spans before export.

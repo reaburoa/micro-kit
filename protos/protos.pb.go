@@ -592,8 +592,9 @@ func (x *Mongodb) GetIsDebug() bool {
 
 type TracerExporter struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Target        string                 `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
-	Sample        float64                `protobuf:"fixed64,2,opt,name=sample,proto3" json:"sample,omitempty"` // 采样率，在0～1 之间，0 表示不采样，1 表示完全采样
+	Target        string                 `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`                              // trace上报目标地址
+	Sample        float64                `protobuf:"fixed64,2,opt,name=sample,proto3" json:"sample,omitempty"`                            // 采样率，在0～1 之间，0 表示不采样，1 表示完全采样
+	ServiceName   string                 `protobuf:"bytes,3,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"` // 服务名称
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -640,6 +641,13 @@ func (x *TracerExporter) GetSample() float64 {
 		return x.Sample
 	}
 	return 0
+}
+
+func (x *TracerExporter) GetServiceName() string {
+	if x != nil {
+		return x.ServiceName
+	}
+	return ""
 }
 
 type OssConfig struct {
@@ -856,10 +864,11 @@ const file_protos_protos_proto_rawDesc = "" +
 	"\aMongodb\x12\x10\n" +
 	"\x03uri\x18\x01 \x01(\tR\x03uri\x12\x12\n" +
 	"\x04mode\x18\x02 \x01(\tR\x04mode\x12\x19\n" +
-	"\bis_debug\x18\x03 \x01(\bR\aisDebug\"@\n" +
+	"\bis_debug\x18\x03 \x01(\bR\aisDebug\"c\n" +
 	"\x0eTracerExporter\x12\x16\n" +
 	"\x06target\x18\x01 \x01(\tR\x06target\x12\x16\n" +
-	"\x06sample\x18\x02 \x01(\x01R\x06sample\"w\n" +
+	"\x06sample\x18\x02 \x01(\x01R\x06sample\x12!\n" +
+	"\fservice_name\x18\x03 \x01(\tR\vserviceName\"w\n" +
 	"\tOssConfig\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x12\"\n" +
 	"\raccess_key_id\x18\x02 \x01(\tR\vaccessKeyId\x12*\n" +

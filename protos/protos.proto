@@ -75,8 +75,9 @@ message Mongodb {
 }
 
 message TracerExporter {
-  string target = 1;
+  string target = 1; // trace上报目标地址
   double sample = 2; // 采样率，在0～1 之间，0 表示不采样，1 表示完全采样
+  string service_name = 3; // 服务名称
 }
 
 message OssConfig {

@@ -15,10 +15,10 @@ import (
 	goGrpc "google.golang.org/grpc"
 )
 
-func ConnGrpc(clientName string, opts ...grpc.ClientOption) (*goGrpc.ClientConn, error) {
-	opts = append([]grpc.ClientOption{
+func ConnGrpc(grpcServer string, options ...grpc.ClientOption) (*goGrpc.ClientConn, error) {
+	options = append([]grpc.ClientOption{
 		grpc.WithTimeout(3 * time.Second),
-		grpc.WithEndpoint(clientName),
+		grpc.WithEndpoint(grpcServer),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 			middleware.RequestLogMiddleware(),
@@ -32,10 +32,9 @@ func ConnGrpc(clientName string, opts ...grpc.ClientOption) (*goGrpc.ClientConn,
 			),
 			circuitbreaker.Client(),
 		),
-		grpc.WithUnaryInterceptor(),
-	}, opts...)
+	}, options...)
 	return grpc.DialInsecure(
 		context.Background(),
-		opts...,
+		options...,
 	)
 }
