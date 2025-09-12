@@ -3,3 +3,9 @@ mysql:
 
 redis:
   addr: localhost:6379
+
+oss:
+  us01:
+    endpoint: https://***.aliyuncs.com
+    access_key_id: clientId
+    access_key_secret: ClientSecret
