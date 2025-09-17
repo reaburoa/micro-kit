@@ -29,3 +29,25 @@ func ParseToSlice[T any](paramStr, separator string, convert func(interface{}) T
 	}
 	return result
 }
+
+func FirstUpper(str string) string {
+	if str == "" {
+		return ""
+	}
+	upperStr := strings.ToUpper(str)
+	if len(str) == 1 {
+		return upperStr
+	}
+	return upperStr[:1] + str[1:]
+}
+
+func FirstLower(str string) string {
+	if str == "" {
+		return ""
+	}
+	lowerStr := strings.ToLower(str)
+	if len(str) == 1 {
+		return lowerStr
+	}
+	return lowerStr[:1] + str[1:]
+}
