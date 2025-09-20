@@ -8,6 +8,7 @@ import (
 	broker "github.com/reaburoa/micro-kit/clients/ikafka/consumer"
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/async"
 	"github.com/reaburoa/micro-kit/utils/log"
 )
 
@@ -91,8 +92,7 @@ type kafkaBK struct {
 }
 
 func (bk *kafkaBK) Start(ctx context.Context) error {
-	//return async.RunWithContext(ctx, bk.start)
-	return nil
+	return async.RunWithContext(ctx, bk.start)
 }
 
 func (bk *kafkaBK) start() error {

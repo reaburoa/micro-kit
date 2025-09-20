@@ -72,3 +72,4 @@ test.json
 runtime
 commodity_blacklist.go
 publish.go
+logs

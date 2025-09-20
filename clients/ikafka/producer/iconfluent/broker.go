@@ -9,6 +9,7 @@ import (
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/cloud/tracer"
 	"github.com/reaburoa/micro-kit/protos"
+	"github.com/reaburoa/micro-kit/utils/async"
 	"github.com/reaburoa/micro-kit/utils/log"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -107,11 +108,11 @@ func (cli *client) initProducer() error {
 	if cli.opts.EventHandler == nil {
 		cli.opts.EventHandler = func(e kafka.Event) {}
 	}
-	// async.RecoverGO(func() {
-	// 	for e := range producer.Events() {
-	// 		cli.opts.EventHandler(e)
-	// 	}
-	// })
+	async.RunWithRecover(func() {
+		for e := range producer.Events() {
+			cli.opts.EventHandler(e)
+		}
+	})
 	cli.producer = producer
 	log.Info("init kafka producer success\n")
 	return nil
