@@ -51,6 +51,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		validate.ProtoValidate(),
 		ratelimit.Server(),
 		metadata.Server(),
+		middleware.CORSMiddleware(),
 	}
 	if len(kmiddleware) > 0 {
 		serverMiddleware = append(serverMiddleware, kmiddleware...)
@@ -63,7 +64,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		http.Logger(krtosLog.NewKratosLog()),
 		http.Address(httpDefaultAddr),
 		http.Timeout(httpDefaultTimeout),
-		http.Filter(middleware.CrosFilter()),
+		//http.Filter(middleware.CrosFilter()),
 	}
 	if conf.Network != "" {
 		ops = append(ops, http.Network(conf.Network))
