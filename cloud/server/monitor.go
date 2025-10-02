@@ -13,7 +13,7 @@ import (
 func RunMetrics() error {
 	metricsHTTPPort := os.Getenv("METRICS_HTTP_PORT")
 	if metricsHTTPPort == "" {
-		metricsHTTPPort = ":3000"
+		metricsHTTPPort = ":3030"
 	}
 
 	go func() {
