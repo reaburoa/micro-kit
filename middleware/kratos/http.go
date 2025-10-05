@@ -7,11 +7,16 @@ import (
 
 	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/reaburoa/micro-kit/errors"
+	"github.com/samber/lo"
 )
 
 const (
 	successCode     int32 = 0
 	baseContentType       = "application"
+)
+
+var (
+	originResponseUrlPath = make([]string, 0, 10)
 )
 
 type BaseHTTPResponse struct {
@@ -33,6 +38,10 @@ func Error(errCode int32, errMsg string) *BaseHTTPResponse {
 	return &BaseHTTPResponse{errCode, errMsg, nil}
 }
 
+func RegisterOriginResponseUrlPath(urlPath []string) {
+	originResponseUrlPath = append(originResponseUrlPath, urlPath...)
+}
+
 func CommonResponseFunc(w http.ResponseWriter, request *http.Request, v interface{}) error {
 	codec, _ := CodecForRequest(request, "Accept")
 	data, err := codec.Marshal(Success(v))
@@ -40,6 +49,15 @@ func CommonResponseFunc(w http.ResponseWriter, request *http.Request, v interfac
 		return err
 	}
 	w.Header().Set("Content-Type", ContentType(codec.Name()))
+	if lo.Contains(originResponseUrlPath, request.URL.Path) {
+		var dataRsp = make(map[string]interface{}, 5)
+		_ = codec.Unmarshal(data, &dataRsp)
+		if d, ok := dataRsp["data"]; ok {
+			dataMap, _ := d.(map[string]interface{})
+			_, err = w.Write([]byte(dataMap["data"].(string)))
+			return err
+		}
+	}
 	_, err = w.Write(data)
 	return err
 }
