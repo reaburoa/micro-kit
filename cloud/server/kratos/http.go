@@ -52,7 +52,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		validate.ProtoValidate(),
 		ratelimit.Server(),
 		metadata.Server(),
-		//middleware.CORSMiddleware(),
+		middleware.CORSMiddleware(),
 	}
 	if len(kmiddleware) > 0 {
 		serverMiddleware = append(serverMiddleware, kmiddleware...)
