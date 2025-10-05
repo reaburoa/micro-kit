@@ -67,7 +67,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		http.Timeout(httpDefaultTimeout),
 		http.Filter(handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "UPDATE"}),
+			handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "HEAD", "UPDATE"}),
 			handlers.AllowedHeaders([]string{"*"}),
 			handlers.IgnoreOptions(),
 		)),

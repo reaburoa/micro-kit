@@ -13,7 +13,6 @@ var defaultConfig config.Config
 
 func loadLocalConfig(confPath string) config.Config {
 	configPath := path.Join(confPath, fmt.Sprintf("configs/%s", env.GetRuntimeEnv()))
-	fmt.Println("configPath==>", configPath)
 	c := config.New(config.WithSource(file.NewSource(fmt.Sprintf("%s/config.yaml", configPath))))
 	defer c.Close() // 关闭watch,不进行自动更新
 

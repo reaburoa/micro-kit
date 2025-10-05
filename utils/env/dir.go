@@ -1,7 +1,6 @@
 package env
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -21,21 +20,18 @@ func GetProjectPath() (string, error) {
 	}
 	// 先从环境变量中获取
 	p := os.Getenv(rootPathEnv)
-	fmt.Println("p==>", p)
 	if p != "" {
 		rootPath = p
 		return rootPath, nil
 	}
 	// 从运行路径获取
 	pwd, err := os.Getwd()
-	fmt.Println("pwd==>", pwd)
 	if err != nil {
 		return "", err
 	}
 
 	// 遍历所有路径找到configs目录，configs目录所在的地方就是项目根目录
 	rootPath = findDir(pwd, "configs")
-	fmt.Println("rootPath==>", rootPath)
 	return rootPath, nil
 }
 
