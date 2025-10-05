@@ -52,7 +52,6 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		validate.ProtoValidate(),
 		ratelimit.Server(),
 		metadata.Server(),
-		middleware.CORSMiddleware(),
 	}
 	if len(kmiddleware) > 0 {
 		serverMiddleware = append(serverMiddleware, kmiddleware...)
@@ -67,9 +66,8 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		http.Timeout(httpDefaultTimeout),
 		http.Filter(handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "HEAD", "UPDATE"}),
-			handlers.AllowedHeaders([]string{"Content-Type"}),
-			handlers.IgnoreOptions(),
+			handlers.AllowedMethods([]string{"POST", "GET", "PUT", "DELETE", "HEAD", "UPDATE"}),
+			handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
 		)),
 	}
 	if conf.Network != "" {
