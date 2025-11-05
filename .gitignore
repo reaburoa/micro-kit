@@ -70,6 +70,4 @@ openapi.yaml
 test.json
 *.log
 runtime
-commodity_blacklist.go
-publish.go
 logs
