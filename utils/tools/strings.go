@@ -1,6 +1,13 @@
 package tools
 
 import (
+	"crypto/hmac"
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/hex"
+	"hash"
 	"strings"
 	"unsafe"
 )
@@ -50,4 +57,31 @@ func FirstLower(str string) string {
 		return lowerStr
 	}
 	return lowerStr[:1] + str[1:]
+}
+
+func Hmac(str, key, sha string) []byte {
+	var hmacHash hash.Hash
+	switch strings.ToUpper(sha) {
+	case SHA1:
+		hmacHash = hmac.New(sha1.New, []byte(key))
+	case SHA256:
+		hmacHash = hmac.New(sha256.New, []byte(key))
+	case SHA512:
+		hmacHash = hmac.New(sha512.New, []byte(key))
+	}
+	hmacHash.Write([]byte(str))
+
+	return hmacHash.Sum(nil)
+}
+
+func HmacString(str, key, sha string) string {
+	hmacByte := Hmac(str, key, sha)
+	return hex.EncodeToString(hmacByte)
+}
+
+func Md5(data string) string {
+	m := md5.New()
+	m.Write([]byte(data))
+	sign := m.Sum(nil)
+	return hex.EncodeToString(sign)
 }
