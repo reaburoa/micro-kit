@@ -1,14 +1,9 @@
 package tools
 
 import (
-	"crypto/hmac"
-	"crypto/md5"
-	"crypto/sha1"
-	"crypto/sha256"
-	"crypto/sha512"
-	"encoding/hex"
-	"hash"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 	"unsafe"
 )
 
@@ -37,51 +32,93 @@ func ParseToSlice[T any](paramStr, separator string, convert func(interface{}) T
 	return result
 }
 
+// FirstUpper 首字母大写
 func FirstUpper(str string) string {
 	if str == "" {
 		return ""
 	}
-	upperStr := strings.ToUpper(str)
-	if len(str) == 1 {
-		return upperStr
+
+	// 快速路径：ASCII 字符
+	if str[0] < utf8.RuneSelf {
+		// ASCII 字符
+		if 'a' <= str[0] && str[0] <= 'z' {
+			// 创建新字符串，只修改第一个字符
+			b := []byte(str)
+			b[0] -= 'a' - 'A'
+			return string(b)
+		}
+		return str
 	}
-	return upperStr[:1] + str[1:]
+
+	// Unicode 路径
+	return firstUpperUnicode(str)
 }
 
+// FirstLower 首字母小写
 func FirstLower(str string) string {
 	if str == "" {
 		return ""
 	}
-	lowerStr := strings.ToLower(str)
-	if len(str) == 1 {
-		return lowerStr
+
+	// 快速路径：ASCII 字符
+	if str[0] < utf8.RuneSelf {
+		if 'A' <= str[0] && str[0] <= 'Z' {
+			b := []byte(str)
+			b[0] += 'a' - 'A'
+			return string(b)
+		}
+		return str
 	}
-	return lowerStr[:1] + str[1:]
+
+	// Unicode 路径
+	return firstLowerUnicode(str)
 }
 
-func Hmac(str, key string, sha HMacHash) []byte {
-	var hmacHash hash.Hash
-	switch sha {
-	case SHA1:
-		hmacHash = hmac.New(sha1.New, []byte(key))
-	case SHA256:
-		hmacHash = hmac.New(sha256.New, []byte(key))
-	case SHA512:
-		hmacHash = hmac.New(sha512.New, []byte(key))
+// firstUpperUnicode 处理 Unicode 字符的首字母大写
+func firstUpperUnicode(str string) string {
+	r, size := utf8.DecodeRuneInString(str)
+	if r == utf8.RuneError {
+		return str
 	}
-	hmacHash.Write([]byte(str))
 
-	return hmacHash.Sum(nil)
+	upperRune := unicode.ToUpper(r)
+
+	// 如果大小写转换后 rune 长度不变，可以原地替换
+	if utf8.RuneLen(upperRune) == size {
+		// 构建新字符串
+		b := make([]byte, len(str))
+		utf8.EncodeRune(b, upperRune)
+		copy(b[size:], str[size:])
+		return string(b)
+	}
+
+	// 长度变化，需要使用 Builder
+	var result strings.Builder
+	result.Grow(len(str) + 4) // 预留一些额外空间
+	result.WriteRune(upperRune)
+	result.WriteString(str[size:])
+	return result.String()
 }
 
-func HmacString(str, key string, sha HMacHash) string {
-	hmacByte := Hmac(str, key, sha)
-	return hex.EncodeToString(hmacByte)
-}
+// firstLowerUnicode 处理 Unicode 字符的首字母小写
+func firstLowerUnicode(str string) string {
+	r, size := utf8.DecodeRuneInString(str)
+	if r == utf8.RuneError {
+		return str
+	}
 
-func Md5(data string) string {
-	m := md5.New()
-	m.Write([]byte(data))
-	sign := m.Sum(nil)
-	return hex.EncodeToString(sign)
+	lowerRune := unicode.ToLower(r)
+
+	if utf8.RuneLen(lowerRune) == size {
+		b := make([]byte, len(str))
+		utf8.EncodeRune(b, lowerRune)
+		copy(b[size:], str[size:])
+		return string(b)
+	}
+
+	var result strings.Builder
+	result.Grow(len(str) + 4)
+	result.WriteRune(lowerRune)
+	result.WriteString(str[size:])
+	return result.String()
 }

@@ -1,11 +1,12 @@
 package tools
 
-type HMacHash string
+// hmacHash
+type HMacHash int
 
 const (
-	SHA1   HMacHash = "SHA-1"
-	SHA256 HMacHash = "SHA-256"
-	SHA512 HMacHash = "SHA-512"
+	SHA1 HMacHash = iota
+	SHA256
+	SHA512
 )
 
 // AESMode AES加密模式
