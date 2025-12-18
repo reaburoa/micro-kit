@@ -36,7 +36,7 @@ func InitOtelTracer() (func(context.Context) error, error) {
 	if !env.IsDebug() {
 		exporter, err = TraceExporterWithGrpc(context.Background(), cfg.Target)
 	} else {
-		exporter, err = TraceExporterWithStdout()
+		exporter, err = TraceExporterWithStdout(cfg.StdoutEnable)
 	}
 	if err != nil {
 		log.Errorf("failed to create trace exporter: %#v", err)

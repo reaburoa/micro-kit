@@ -9,3 +9,7 @@ oss:
     endpoint: https://***.aliyuncs.com
     access_key_id: clientId
     access_key_secret: ClientSecret
+
+tracer:
+ sample: 1
+ stdout_enable: false
