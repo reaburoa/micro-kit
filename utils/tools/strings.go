@@ -59,9 +59,9 @@ func FirstLower(str string) string {
 	return lowerStr[:1] + str[1:]
 }
 
-func Hmac(str, key, sha string) []byte {
+func Hmac(str, key string, sha HMacHash) []byte {
 	var hmacHash hash.Hash
-	switch strings.ToUpper(sha) {
+	switch sha {
 	case SHA1:
 		hmacHash = hmac.New(sha1.New, []byte(key))
 	case SHA256:
@@ -74,7 +74,7 @@ func Hmac(str, key, sha string) []byte {
 	return hmacHash.Sum(nil)
 }
 
-func HmacString(str, key, sha string) string {
+func HmacString(str, key string, sha HMacHash) string {
 	hmacByte := Hmac(str, key, sha)
 	return hex.EncodeToString(hmacByte)
 }
