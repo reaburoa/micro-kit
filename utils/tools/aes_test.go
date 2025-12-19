@@ -8,15 +8,14 @@ import (
 
 func Test_AES(t *testing.T) {
 	key := []byte("key123key123key1")
-	iv := []byte("key123key123key1")
 
-	originStr := "this is a string"
-	encBy, iv, err := AESEncrypt([]byte(originStr), key, nil, AESModeCBC)
+	originStr := "this is a string. 挺好的"
+	encBy, iv, err := AESEncrypt([]byte(originStr), key, nil, AESModeGCM)
 	fmt.Println("AESEncrypt data ", encBy, err)
 
 	fmt.Println("encrypt", base64.StdEncoding.EncodeToString(encBy))
 
-	oriB, err := AESDecrypt(encBy, key, iv, AESModeCBC)
+	oriB, err := AESDecrypt(encBy, key, iv, AESModeGCM)
 	fmt.Println("AESDecrypt data ", string(oriB), err)
 }
 
@@ -37,10 +36,10 @@ func Test_AESGCM(t *testing.T) {
 	if err != nil {
 		return
 	}
-	ed.SetTagSize(16)
+	_ = ed.SetTagSize(16, AESModeGCM)
 	ed.SetAuthData([]byte("auth add"))
 
-	originStr := "this is a string"
+	originStr := "this is a string. 挺好的"
 	encBy, err := ed.Encrypt([]byte(originStr), AESModeGCM)
 	fmt.Println("AESEncrypt data ", encBy, err)
 

@@ -17,6 +17,7 @@ type AESEncryptorDecryptor struct {
 	block    cipher.Block
 }
 
+// NewAESEncryptorDecryptor 返回加解密实例
 func NewAESEncryptorDecryptor(key []byte) (*AESEncryptorDecryptor, error) {
 	// 验证密钥
 	if err := validateKey(key); err != nil {
@@ -66,6 +67,7 @@ func (e *AESEncryptorDecryptor) Decrypt(ciphertext []byte, mod AESMode) ([]byte,
 	}
 }
 
+// SetIV 设置iv数据
 func (e *AESEncryptorDecryptor) SetIV(iv []byte, mod AESMode) error {
 	err := validateIV(iv, mod)
 	if err != nil {
@@ -75,10 +77,17 @@ func (e *AESEncryptorDecryptor) SetIV(iv []byte, mod AESMode) error {
 	return nil
 }
 
-func (e *AESEncryptorDecryptor) SetTagSize(tagSize int) {
+// SetTagSize 设置GCM模式下tagsize
+func (e *AESEncryptorDecryptor) SetTagSize(tagSize int, mod AESMode) error {
+	err := validateTagSize(tagSize, mod)
+	if err != nil {
+		return err
+	}
 	e.tagSize = tagSize
+	return nil
 }
 
+// SetAuthData 设置GCM模式下加密添加字符
 func (e *AESEncryptorDecryptor) SetAuthData(authData []byte) {
 	e.authData = authData
 }
@@ -155,7 +164,7 @@ func (e *AESEncryptorDecryptor) encryptGCM(plaintext []byte) ([]byte, error) {
 	// 设置默认的TagSize
 	tagSize := e.tagSize
 	if tagSize == 0 {
-		tagSize = 16 // 默认16字节tag
+		tagSize = getIVSizeForMode(AESModeGCM)
 	}
 
 	// 创建GCM
@@ -175,7 +184,7 @@ func (e *AESEncryptorDecryptor) decryptGCM(ciphertext []byte) ([]byte, error) {
 	// 设置默认的TagSize
 	tagSize := e.tagSize
 	if tagSize == 0 {
-		tagSize = 16 // 默认16字节tag
+		tagSize = getIVSizeForMode(AESModeGCM)
 	}
 
 	// 创建GCM
@@ -215,6 +224,7 @@ func (e *AESEncryptorDecryptor) decryptECB(ciphertext []byte) ([]byte, error) {
 	return pkcs7Unpadding(plaintext)
 }
 
+// validateKey 检查key长度
 func validateKey(key []byte) error {
 	keyLen := len(key)
 	switch keyLen {
@@ -225,6 +235,7 @@ func validateKey(key []byte) error {
 	}
 }
 
+// validateIV 检查iv长度
 func validateIV(iv []byte, mode AESMode) error {
 	// ECB模式不需要IV
 	if mode == AESModeECB {
@@ -241,24 +252,39 @@ func validateIV(iv []byte, mode AESMode) error {
 	// 检查IV长度
 	expectedSize := getIVSizeForMode(mode)
 	if len(iv) != expectedSize {
-		return fmt.Errorf("IV must be %d bytes for %v mode, got %d",
-			expectedSize, mode, len(iv))
+		return fmt.Errorf("IV must be %d bytes for %v mode, got %d", expectedSize, mode, len(iv))
 	}
 
 	return nil
 }
 
+// validateTagSize 检查tagSize大小
+func validateTagSize(tagSize int, mode AESMode) error {
+	// 非GCM模式不需要tagSize
+	if mode != AESModeGCM {
+		return nil
+	}
+
+	if tagSize < AESTagSizeMin || tagSize > AESTagSizeMax {
+		return fmt.Errorf("tag size must be [%d, %d]", AESTagSizeMin, AESTagSizeMax)
+	}
+
+	return nil
+}
+
+// getIVSizeForMode 获取不同模式下iv长度
 func getIVSizeForMode(mode AESMode) int {
 	switch mode {
 	case AESModeCBC, AESModeCTR:
 		return AESBlockSize
 	case AESModeGCM:
-		return 12 // GCM推荐使用12字节nonce
+		return AESTagSizeMin
 	default:
 		return AESBlockSize
 	}
 }
 
+// generateRandomBytes 获取随机字符串
 func generateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := io.ReadFull(rand.Reader, b)
@@ -268,6 +294,7 @@ func generateRandomBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
+// pkcs7Padding 补码
 func pkcs7Padding(data []byte, blockSize int) []byte {
 	padding := blockSize - len(data)%blockSize
 	padtext := make([]byte, padding)
@@ -277,6 +304,7 @@ func pkcs7Padding(data []byte, blockSize int) []byte {
 	return append(data, padtext...)
 }
 
+// pkcs7Unpadding 解码
 func pkcs7Unpadding(data []byte) ([]byte, error) {
 	if len(data) == 0 {
 		return nil, errors.New("data is empty")
@@ -297,41 +325,55 @@ func pkcs7Unpadding(data []byte) ([]byte, error) {
 	return data[:len(data)-padding], nil
 }
 
-// 加密
+// AESEncrypt 加密
+// 返回加密后密文、iv
 func AESEncrypt(plaintext, key, iv []byte, mod AESMode) ([]byte, []byte, error) {
-	AESED, err := NewAESEncryptorDecryptor(key)
+	aesEd, err := NewAESEncryptorDecryptor(key)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	blockSize := getIVSizeForMode(mod)
 	if len(iv) <= 0 {
-		iv, err = generateRandomBytes(getIVSizeForMode(mod))
+		iv, err = generateRandomBytes(blockSize)
 		if err != nil {
 			return nil, nil, err
 		}
 	}
-	err = AESED.SetIV(iv, mod)
+	err = aesEd.SetIV(iv, mod)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	ciphertext, err := AESED.Encrypt(plaintext, mod)
+	err = aesEd.SetTagSize(blockSize, mod)
+	if err != nil {
+		return nil, nil, err
+	}
+	aesEd.SetAuthData(iv)
+
+	ciphertext, err := aesEd.Encrypt(plaintext, mod)
 	if err != nil {
 		return nil, nil, err
 	}
 	return ciphertext, iv, nil
 }
 
-// 解密
+// AESDecrypt 解密
 func AESDecrypt(ciphertext, key, iv []byte, mod AESMode) ([]byte, error) {
-	AESED, err := NewAESEncryptorDecryptor(key)
+	aesEd, err := NewAESEncryptorDecryptor(key)
 	if err != nil {
 		return nil, err
 	}
-	err = AESED.SetIV(iv, mod)
+	blockSize := getIVSizeForMode(mod)
+	err = aesEd.SetIV(iv, mod)
 	if err != nil {
 		return nil, err
 	}
+	err = aesEd.SetTagSize(blockSize, mod)
+	if err != nil {
+		return nil, err
+	}
+	aesEd.SetAuthData(iv)
 
-	return AESED.Decrypt(ciphertext, mod)
+	return aesEd.Decrypt(ciphertext, mod)
 }

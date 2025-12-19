@@ -25,4 +25,7 @@ const (
 	AES192KeySize = 24
 	AES256KeySize = 32
 	AESBlockSize  = 16 // AES块大小固定为16字节
+
+	AESTagSizeMin = 12 // AES GCM 模式下，tag size最小值
+	AESTagSizeMax = 16 // AES GCM 模式下，tag size最大值
 )
