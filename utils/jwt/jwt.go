@@ -54,7 +54,7 @@ func (j *jwtCert) Parse(authToken string, claims jwt.Claims) (*jwt.Token, error)
 			return jwt.ParseRSAPublicKeyFromPEM(cert.PublicKey)
 		}
 		return nil, errors.Errorf("Can't find the key: %v", token.Header["kid"])
-	}, jwt.WithoutClaimsValidation())
+	})
 }
 
 func (j *jwtCert) Sign(certKey string, token *jwt.Token) (tokenString string, err error) {

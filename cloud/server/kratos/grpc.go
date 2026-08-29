@@ -35,6 +35,10 @@ func NewGrpcWithName(grpcSrv string, nacosOpts ...grpc.ServerOption) *grpc.Serve
 }
 
 func newGrpc(conf *server.Server, opts ...grpc.ServerOption) *grpc.Server {
+	if conf == nil {
+		conf = &server.Server{}
+	}
+
 	opts = append([]grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -60,11 +64,15 @@ func newGrpc(conf *server.Server, opts ...grpc.ServerOption) *grpc.Server {
 	if conf.Timeout != "" {
 		duration, err := time.ParseDuration(conf.Timeout)
 		if err != nil {
-			panic(err.Error())
+			log.Warnf("invalid grpc timeout %q, use default %s: %v", conf.Timeout, grpcDefaultTimeout, err)
+		} else {
+			opts = append(opts, grpc.Timeout(duration))
 		}
-		opts = append(opts, grpc.Timeout(duration))
 	}
 	srv := grpc.NewServer(opts...)
+	if err := server.AutoRegisterWithNacos(conf); err != nil {
+		log.Warnf("auto register grpc server with nacos failed: %v", err)
+	}
 
 	err := server.RunMetrics()
 	if err != nil {

@@ -1,6 +1,7 @@
 package ioss
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"testing"
@@ -20,17 +21,12 @@ func Test_GetObject(t *testing.T) {
 		return
 	}
 
-	bucket, err := manger.GetClient("us01")
+	bucket, err := manger.GetBucket("us01", "aigc-us02")
 	if err != nil {
 		fmt.Println("get oss bucket err", err)
 		return
 	}
-	bk, err := bucket.GetBucket("aigc-us02")
-	if err != nil {
-		fmt.Println("get oss bucket err", err)
-		return
-	}
-	reader, err := bk.GetObject("tb/tbl5wK7ykMP9ZNKb/8288/EP1.txt")
+	reader, err := bucket.GetObject(context.Background(), "tb/tbl5wK7ykMP9ZNKb/8288/EP1.txt")
 	if err != nil {
 		fmt.Println("get object from bucket err", err)
 		return
@@ -42,7 +38,7 @@ func Test_GetObject(t *testing.T) {
 	}
 	fmt.Println(string(data))
 
-	signUrl, err := bk.SignURL("tb/tbl5wK7ykMP9ZNKb/8288/EP1.txt", oss.HTTPGet, 7200)
+	signUrl, err := bucket.SignURL(context.Background(), "tb/tbl5wK7ykMP9ZNKb/8288/EP1.txt", oss.HTTPGet, 7200)
 	if err != nil {
 		fmt.Println("sign object url from bucket err", err)
 		return

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/reaburoa/micro-kit/cloud/config"
@@ -24,7 +25,8 @@ const (
 )
 
 var (
-	TraceProvider trace.Tracer
+	traceMu       sync.RWMutex
+	TraceProvider trace.Tracer = otel.Tracer("micro-kit-default")
 )
 
 func InitOtelTracer() (func(context.Context) error, error) {
@@ -86,7 +88,9 @@ func InitProvider(exporter sdktrace.SpanExporter, config *protos.TracerExporter)
 	// set global propagator to tracecontext (the default is no-op).
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
-	TraceProvider = GetTracer()
+	traceMu.Lock()
+	TraceProvider = otel.Tracer(env.ServiceName())
+	traceMu.Unlock()
 	// Shutdown will flush any remaining spans and shut down the exporter.
 	return tracerProvider.Shutdown, nil
 }
@@ -100,7 +104,12 @@ func GetTracerProvider() trace.TracerProvider {
 }
 
 func GetTracer() trace.Tracer {
-	return otel.Tracer(env.ServiceName())
+	traceMu.RLock()
+	defer traceMu.RUnlock()
+	if TraceProvider == nil {
+		return otel.Tracer(env.ServiceName())
+	}
+	return TraceProvider
 }
 
 func GetExporterConfig() *protos.TracerExporter {

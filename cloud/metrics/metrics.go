@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"sync"
+
 	"github.com/reaburoa/micro-kit/utils/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -10,7 +12,19 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-var Meter api.Meter
+var (
+	meterMu sync.RWMutex
+	Meter   api.Meter = otel.GetMeterProvider().Meter("micro-kit-default")
+)
+
+func GetMeter() api.Meter {
+	meterMu.RLock()
+	defer meterMu.RUnlock()
+	if Meter == nil {
+		return otel.GetMeterProvider().Meter("micro-kit-default")
+	}
+	return Meter
+}
 
 func InitMetrics(serviceName string) {
 	// The exporter embeds a default OpenTelemetry Reader and
@@ -29,5 +43,7 @@ func InitMetrics(serviceName string) {
 	}
 	provider := metric.NewMeterProvider(metric.WithResource(res), metric.WithReader(exporter))
 	otel.SetMeterProvider(provider)
-	Meter = otel.GetMeterProvider().Meter(serviceName)
+	meterMu.Lock()
+	Meter = provider.Meter(serviceName)
+	meterMu.Unlock()
 }

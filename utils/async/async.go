@@ -8,12 +8,20 @@ import (
 )
 
 func RunWithContext(ctx context.Context, f func() error) error {
-	errChan := make(chan error)
+	done := make(chan struct{})
+	errChan := make(chan error, 1)
 	go func() {
+		defer close(done)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		errChan <- f()
 	}()
 	select {
 	case <-ctx.Done():
+		<-done
 		return ctx.Err()
 	case err := <-errChan:
 		return err
