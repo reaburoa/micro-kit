@@ -20,9 +20,9 @@ var (
 )
 
 type BaseHTTPResponse struct {
-	Code    int32       `json:"code,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
+	Code    int32       `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 func Success(v interface{}) *BaseHTTPResponse {
