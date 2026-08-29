@@ -1,15 +1,140 @@
 mysql:
-  dsn: root@rea
+  default:
+    driver: mysql
+    dsn: "root:root@tcp(127.0.0.1:3306)/micro-kit?charset=utf8mb4&parseTime=True&loc=Local"
+    max_idle: 10
+    max_open: 50
+    max_lifetime: 1800
+    is_debug: false
 
 redis:
-  addr: localhost:6379
+  default:
+    network: tcp
+    addr: "127.0.0.1:6379"
+    password: ""
+    db: 0
+    read_timeout: "50ms"
+    write_timeout: "50ms"
+    dial_timeout: "5s"
+    min_idle_conn: 5
+    pool_timeout: "5s"
+    max_idle_timeout: "10m"
+    max_conn_age: "30m"
+    max_retries: 3
+    pool_size: 20
+    max_connections: 50
+    max_idle_conn: 20
+
+nacos:
+  config_center:
+    servers:
+      - ip_addr: "127.0.0.1"
+        port: 8848
+    client:
+      namespace_id: "public"
+      timeout_ms: 5000
+      log_dir: "/tmp/nacos/log"
+      cache_dir: "/tmp/nacos/cache"
+      log_level: "info"
+      access_key: "${NACOS_ACCESS_KEY}"
+      secret_key: "${NACOS_SECRET_KEY}"
+      not_load_cache_at_start: false
+      update_cache_when_empty: true
+    data_id: "micro-kit"
+    group: "DEFAULT_GROUP"
+    namespace: "public"
+  service_registry:
+    servers:
+      - ip_addr: "127.0.0.1"
+        port: 8848
+    client:
+      namespace_id: "public"
+      timeout_ms: 5000
+      log_dir: "/tmp/nacos/log"
+      cache_dir: "/tmp/nacos/cache"
+      log_level: "info"
+      access_key: "${NACOS_ACCESS_KEY}"
+      secret_key: "${NACOS_SECRET_KEY}"
+      not_load_cache_at_start: false
+      update_cache_when_empty: true
+    service_name: "micro-kit"
+    group_name: "DEFAULT_GROUP"
+    ephemeral: true
+    healthy: true
+    enable: false
+    weight: 1
+    cluster_name: "DEFAULT"
+    metadata:
+      app: "micro-kit"
+      env: "debug"
 
 oss:
   us01:
-    endpoint: https://***.aliyuncs.com
-    access_key_id: clientId
-    access_key_secret: ClientSecret
+    endpoint: "https://oss-cn-hangzhou.aliyuncs.com"
+    access_key_id: "your-access-key-id"
+    access_key_secret: "your-access-key-secret"
+
+server:
+  http:
+    network: tcp
+    port: 8080
+    timeout: "30s"
+    name: "http"
+    enable_nacos: false
+    enable_watch: false
+  grpc:
+    network: tcp
+    port: 8081
+    timeout: "30s"
+    name: "grpc"
+    enable_nacos: false
+    enable_watch: false
+
+logger:
+  path: "./logs"
+  level: "info"
+  filename: "app.log"
+  max_size: 100
+  max_age: 7
+  is_compress: true
+  backup_nums: 5
+
+kafka:
+  default:
+    servers: "127.0.0.1:9092"
+    topic: "micro-kit"
+    topics:
+      - "micro-kit"
+    protocol: "plaintext"
+    mechanism: "PLAIN"
+    ca_location: ""
+    username: ""
+    password: ""
+    group_id: "micro-kit-group"
+    enable: true
+    auto_offset_reset: "earliest"
+    config_map:
+      request.timeout.ms: "30000"
+      session.timeout.ms: "30000"
+
+rocketmq:
+  default:
+    namesrv_addr: "127.0.0.1:9876"
+    namesrv_addrs:
+      - "127.0.0.1:9876"
+    group_name: "DEFAULT_GROUP"
+    producer_group: "micro-kit-producer-group"
+    consumer_group: "micro-kit-consumer-group"
+    topic: "micro-kit-topic"
+    tag: "default"
+    retry: 3
+    consumer_model: "CLUSTERING"
+    consume_timeout: "30s"
+    consume_message_batch_max_size: 10
+    pull_batch_size: 32
 
 tracer:
- sample: 1
- stdout_enable: false
+  target: ""
+  sample: 1
+  service_name: "micro-kit"
+  stdout_enable: true

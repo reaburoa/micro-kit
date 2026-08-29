@@ -7,9 +7,13 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	broker "github.com/reaburoa/micro-kit/clients/ikafka/consumer"
 	"github.com/reaburoa/micro-kit/cloud/config"
+	"github.com/reaburoa/micro-kit/cloud/tracer"
 	"github.com/reaburoa/micro-kit/protos"
 	"github.com/reaburoa/micro-kit/utils/async"
 	"github.com/reaburoa/micro-kit/utils/log"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type HandlerFunc func(message *kafka.Message)
@@ -108,7 +112,29 @@ func (bk *kafkaBK) start() error {
 			if e.TopicPartition.Error != nil {
 				log.Errorf("Consumer error: %+v (%+v)\n", e.TopicPartition.Error, e)
 			}
+			if tracer.TraceProvider == nil {
+				bk.opts.Handler(e)
+				continue
+			}
+			ctx, span := tracer.TraceProvider.Start(context.Background(), "kafka-consume", trace.WithSpanKind(trace.SpanKindConsumer))
+			defer span.End()
+			span.SetAttributes(
+				attribute.String("messaging.system", "kafka"),
+				attribute.String("messaging.destination", *e.TopicPartition.Topic),
+				attribute.String("messaging.operation", "receive"),
+				attribute.String("kafka.key", string(e.Key)),
+				attribute.Int("kafka.partition", int(e.TopicPartition.Partition)),
+				attribute.Int("kafka.offset", int(e.TopicPartition.Offset)),
+			)
+			if e.TopicPartition.Error != nil {
+				span.RecordError(e.TopicPartition.Error)
+				span.SetStatus(codes.Error, e.TopicPartition.Error.Error())
+			}
 			bk.opts.Handler(e)
+			if e.TopicPartition.Error == nil {
+				span.SetStatus(codes.Ok, "")
+			}
+			_ = ctx
 		case kafka.Error:
 			log.Errorf("Consumer error: %+v\n", e)
 		default:

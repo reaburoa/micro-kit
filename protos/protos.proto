@@ -68,6 +68,21 @@ message Kafka {
   string auto_offset_reset = 12; // smallest, earliest, beginning, largest, latest 消费位点
 }
 
+message RocketMQ {
+  repeated string namesrv_addrs = 1;
+  string namesrv_addr = 2;
+  string group_name = 3;
+  string producer_group = 4;
+  string consumer_group = 5;
+  string topic = 6;
+  string tag = 7;
+  int32 retry = 8;
+  string consumer_model = 9; // CLUSTERING, BROADCASTING
+  string consume_timeout = 10;
+  int32 consume_message_batch_max_size = 11; // 每次消费最多处理的消息数
+  int32 pull_batch_size = 12; // 每次拉取消息的批量大小
+}
+
 message Mongodb {
   string uri = 1;
   string mode = 2;
@@ -85,6 +100,46 @@ message OssConfig {
   string endpoint = 1;
   string access_key_id = 2;
   string access_key_secret = 3;
+}
+
+message NacosServerConfig {
+  string ip_addr = 1;
+  uint64 port = 2;
+  string scheme = 3;
+  string context_path = 4;
+}
+
+message NacosClientConfig {
+  string namespace_id = 1;
+  uint64 timeout_ms = 2;
+  string log_dir = 3;
+  string cache_dir = 4;
+  string log_level = 5;
+  string access_key = 6;
+  string secret_key = 7;
+  bool not_load_cache_at_start = 8;
+  bool update_cache_when_empty = 9;
+}
+
+message NacosConfigCenter {
+  repeated NacosServerConfig servers = 1;
+  NacosClientConfig client = 2;
+  string data_id = 3;
+  string group = 4;
+  string namespace = 5;
+}
+
+message NacosServiceRegistry {
+  repeated NacosServerConfig servers = 1;
+  NacosClientConfig client = 2;
+  string service_name = 3;
+  string group_name = 4;
+  bool ephemeral = 5;
+  bool healthy = 6;
+  bool enable = 7;
+  double weight = 8;
+  string cluster_name = 9;
+  map<string, string> metadata = 10;
 }
 
 message Logger {

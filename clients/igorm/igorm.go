@@ -33,18 +33,18 @@ func ConnGorm(instance string, cfg *protos.Mysql) (*gorm.DB, func(), error) {
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
-		log.Error("初始化mysql连接失败", log.Err(err), log.Any("error msg", err.Error())) // 增加告警
-		panic("Init mysql [" + instance + "] Failed With " + err.Error())
+		log.Error("初始化mysql连接失败", log.Err(err), log.Any("error msg", err.Error()))
+		return nil, nil, fmt.Errorf("init mysql [%s] failed: %w", instance, err)
 	}
 	db, err := conn.DB()
 	if err != nil {
-		log.Error("mysql连接DB失败", log.Err(err), log.Any("error msg", err.Error())) // 增加告警
-		panic("Init mysql DB [" + instance + "] Failed With " + err.Error())
+		log.Error("mysql连接DB失败", log.Err(err), log.Any("error msg", err.Error()))
+		return nil, nil, fmt.Errorf("init mysql db [%s] failed: %w", instance, err)
 	}
 	err = db.Ping()
 	if err != nil {
-		log.Error("mysql连通性检测失败", log.Err(err), log.Any("error msg", err.Error())) // 增加告警
-		panic("Ping mysql DB [" + instance + "] Failed With " + err.Error())
+		log.Error("mysql连通性检测失败", log.Err(err), log.Any("error msg", err.Error()))
+		return nil, nil, fmt.Errorf("ping mysql db [%s] failed: %w", instance, err)
 	}
 	if cfg.MaxIdle > 0 {
 		db.SetMaxIdleConns(int(cfg.MaxIdle))
@@ -54,6 +54,7 @@ func ConnGorm(instance string, cfg *protos.Mysql) (*gorm.DB, func(), error) {
 	}
 	if cfg.MaxLifetime > 0 {
 		db.SetConnMaxLifetime(time.Duration(cfg.MaxLifetime) * time.Second)
+		db.SetConnMaxIdleTime(time.Duration(cfg.MaxLifetime) * time.Second)
 	}
 	if cfg.IsDebug {
 		conn = conn.Debug()
@@ -62,7 +63,7 @@ func ConnGorm(instance string, cfg *protos.Mysql) (*gorm.DB, func(), error) {
 	for _, plugin := range []gorm.Plugin{tracingGormPlugin} {
 		err = conn.Use(plugin)
 		if err != nil {
-			panic("Register Plugin err: " + err.Error())
+			return nil, nil, fmt.Errorf("register plugin failed: %w", err)
 		}
 	}
 	log.Infof("Ping mysql DB [%s] Success", instance)
@@ -76,7 +77,7 @@ func GormClientWithTransPlugin(key string) (*gorm.DB, Provider, func(), error) {
 	}
 	err = db.Use(&GormTxnPlugin{})
 	if err != nil {
-		panic("Register Plugin err: " + err.Error())
+		return nil, nil, clearFunc, fmt.Errorf("register trans plugin failed: %w", err)
 	}
 	transProvider := NewTransactionProvider(db)
 	return db, transProvider, clearFunc, nil

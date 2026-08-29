@@ -24,21 +24,24 @@ func AccessLogMiddleware() middleware.Middleware {
 				message   string
 				accessLog = make(map[string]interface{}, 10)
 			)
-			if tr, ok := transport.FromServerContext(ctx); ok {
-				userIp := getIp(tr.RequestHeader())
-				accessLog = map[string]interface{}{
-					"proto":      tr.Operation(),
-					"user-agent": getUa(tr.RequestHeader()),
-					"remote":     userIp,
-					//"app-version": ctxutil.GetCommonHeader(ctx, ctxutil.CommonHeaderAppVersion),
-					"request_id": tr.RequestHeader().Get("Request-Id"),
-					"user-token": tr.RequestHeader().Get("Token"),
-					"X-Scheme":   tr.RequestHeader().Get("X-Scheme"),
-					"kind":       tr.Kind().String(),
-					"endpoint":   tr.Endpoint(),
-					"kind_type":  "server",
+			if tr, ok := transport.FromServerContext(ctx); ok && tr != nil {
+				head := tr.RequestHeader()
+				if head != nil {
+					userIp := getIp(head)
+					accessLog = map[string]interface{}{
+						"proto":      tr.Operation(),
+						"user-agent": getUa(head),
+						"remote":     userIp,
+						//"app-version": ctxutil.GetCommonHeader(ctx, ctxutil.CommonHeaderAppVersion),
+						"request_id": head.Get("Request-Id"),
+						"user-token": head.Get("Token"),
+						"X-Scheme":   head.Get("X-Scheme"),
+						"kind":       tr.Kind().String(),
+						"endpoint":   tr.Endpoint(),
+						"kind_type":  "server",
+					}
+					ctx = context.WithValue(ctx, ctxutils.CtxUserIpKey, userIp)
 				}
-				ctx = context.WithValue(ctx, ctxutils.CtxUserIpKey, userIp)
 			}
 			reply, err = handler(ctx, req)
 			if err != nil {
@@ -109,6 +112,9 @@ func extractArgs(req interface{}) string {
 }
 
 func getUa(trHeader transport.Header) string {
+	if trHeader == nil {
+		return ""
+	}
 	ua := trHeader.Get("User-Agent")
 	if ua == "" {
 		ua = trHeader.Get("user-agent")
@@ -119,6 +125,9 @@ func getUa(trHeader transport.Header) string {
 
 // 通过网关Header获取IP地址
 func getIp(trHeader transport.Header) string {
+	if trHeader == nil {
+		return ""
+	}
 	remoteIp := trHeader.Get("X-Forwarded-For")
 	if remoteIp == "" {
 		remoteIp = trHeader.Get("X-Real-Ip")
@@ -127,5 +136,8 @@ func getIp(trHeader transport.Header) string {
 		}
 	}
 
+	if remoteIp == "" {
+		return ""
+	}
 	return strings.Split(remoteIp, ",")[0]
 }

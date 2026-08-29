@@ -1,95 +1,108 @@
-package kratos
+package nacos
 
 import (
-	"os"
-	"path"
+	"fmt"
 
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/model"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/pkg/errors"
-	"github.com/reaburoa/micro-kit/utils/env"
-	"github.com/reaburoa/micro-kit/utils/log"
-	"gopkg.in/yaml.v2"
+	"github.com/reaburoa/micro-kit/protos"
 )
 
-type ServerConfig struct {
-	IpAddr string `json:"ip_addr"`
-	Port   uint64 `json:"port"`
+func normalizeClientConfig(cfg *protos.NacosClientConfig) {
+	if cfg == nil {
+		return
+	}
+	if cfg.TimeoutMs == 0 {
+		cfg.TimeoutMs = 5000
+	}
+	if cfg.LogLevel == "" {
+		cfg.LogLevel = "info"
+	}
+	if cfg.LogDir == "" {
+		cfg.LogDir = "/tmp/nacos/log"
+	}
+	if cfg.CacheDir == "" {
+		cfg.CacheDir = "/tmp/nacos/cache"
+	}
+	if !cfg.NotLoadCacheAtStart {
+		cfg.NotLoadCacheAtStart = true
+	}
+	if !cfg.UpdateCacheWhenEmpty {
+		cfg.UpdateCacheWhenEmpty = true
+	}
 }
 
-type ClientConfig struct {
-	NamespaceId string `json:"namespace_id"`
-	TimeoutMs   uint64 `json:"timeout_ms"`
-	LogDir      string `json:"log_dir"`
-	CacheDir    string `json:"cache_dir"`
-	RotateTime  string `json:"rotate_time"`
-	MaxAge      int    `json:"max_age"`
-	LogLevel    string `json:"log_level"`
-	AccessKey   string `json:"access_key"`
-	SecretKey   string `json:"secret_key"`
-}
-
-type AddrConfig struct {
-	ServerConfig []ServerConfig `json:"server_configs"`
-	ClientConfig ClientConfig   `json:"client_config"`
-}
-
-func ParsePluginConfig() (*AddrConfig, error) {
-	var pluginConfig *AddrConfig
-	configPath := "configs/" + string(env.GetRuntimeEnv())
-	if env.IsDebug() {
-		rootPath, err := env.GetProjectPath()
-		if err != nil {
-			panic("get root path " + err.Error())
-		}
-		configPath = path.Join(rootPath, configPath)
+func buildClientConfig(cfg *protos.NacosClientConfig) *constant.ClientConfig {
+	if cfg == nil {
+		cfg = &protos.NacosClientConfig{}
 	}
-	addrsConfigPath := path.Join(configPath, "plugin.yaml")
-	pluginContent, err := os.ReadFile(addrsConfigPath)
-	if err != nil {
-		return nil, errors.WithMessage(err, "read plugin.yaml failed")
-	}
-	err = yaml.Unmarshal(pluginContent, &pluginConfig)
-	if err != nil {
-		return nil, errors.WithMessagef(err, "plugin.yaml content error, content is %s", string(pluginContent))
-	}
-
-	return pluginConfig, nil
-}
-
-// RegisterFactory 注册
-func RegisterFactory() (naming_client.INamingClient, error) {
-	pluginConfig, err := ParsePluginConfig()
-	if err != nil {
-		return nil, err
-	}
-	if pluginConfig == nil {
-		return nil, errors.New("plugin.yaml config is nil,please use initPlugin to init pluginConfig")
-	}
-	if len(pluginConfig.ServerConfig) <= 0 {
-		return nil, errors.New("plugin.yaml config nacos server list is empty")
-	}
-
-	return RegisterFactoryWithConfig(pluginConfig.ServerConfig[0], pluginConfig.ClientConfig)
-}
-
-// registerFactory 注册
-func RegisterFactoryWithConfig(serverCfg ServerConfig, clientCfg ClientConfig) (naming_client.INamingClient, error) {
+	normalizeClientConfig(cfg)
 	cc := constant.NewClientConfig(
-		constant.WithNamespaceId(clientCfg.NamespaceId),
-		constant.WithTimeoutMs(clientCfg.TimeoutMs),
-		constant.WithNotLoadCacheAtStart(true),
-		constant.WithUpdateCacheWhenEmpty(true),
-		constant.WithAccessKey(clientCfg.AccessKey),
-		constant.WithSecretKey(clientCfg.SecretKey),
+		constant.WithNamespaceId(cfg.NamespaceId),
+		constant.WithTimeoutMs(cfg.TimeoutMs),
+		constant.WithNotLoadCacheAtStart(cfg.NotLoadCacheAtStart),
+		constant.WithUpdateCacheWhenEmpty(cfg.UpdateCacheWhenEmpty),
+		constant.WithAccessKey(cfg.AccessKey),
+		constant.WithSecretKey(cfg.SecretKey),
+		constant.WithLogDir(cfg.LogDir),
+		constant.WithCacheDir(cfg.CacheDir),
+		constant.WithLogLevel(cfg.LogLevel),
 	)
-	sc := []constant.ServerConfig{
-		*constant.NewServerConfig(serverCfg.IpAddr, serverCfg.Port),
+	return cc
+}
+
+func buildServerConfigs(serverCfgs []*protos.NacosServerConfig) []constant.ServerConfig {
+	servers := make([]constant.ServerConfig, 0, len(serverCfgs))
+	for _, serverCfg := range serverCfgs {
+		if serverCfg == nil || serverCfg.IpAddr == "" {
+			continue
+		}
+		servers = append(servers, *constant.NewServerConfig(serverCfg.IpAddr, serverCfg.Port))
 	}
-	clientParam := vo.NacosClientParam{ClientConfig: cc, ServerConfigs: sc}
-	client, err := clients.NewNamingClient(clientParam)
-	log.Info("register server info ", clientCfg, " client ", client, " error ", err)
-	return client, err
+	return servers
+}
+
+func buildRegisterInstanceParam(ip string, port uint64, serviceName, groupName string, metadata map[string]string) (vo.RegisterInstanceParam, error) {
+	if ip == "" {
+		return vo.RegisterInstanceParam{}, errors.New("nacos ip is empty")
+	}
+	if serviceName == "" {
+		return vo.RegisterInstanceParam{}, errors.New("nacos service name is empty")
+	}
+	if port == 0 {
+		port = 80
+	}
+	if groupName == "" {
+		groupName = "DEFAULT_GROUP"
+	}
+	if metadata == nil {
+		metadata = map[string]string{}
+	}
+	return vo.RegisterInstanceParam{
+		Ip:          ip,
+		Port:        port,
+		Weight:      1,
+		Enable:      true,
+		Healthy:     true,
+		Metadata:    metadata,
+		ServiceName: serviceName,
+		GroupName:   groupName,
+		Ephemeral:   true,
+	}, nil
+}
+
+func buildSelectOneHealthInstanceParam(serviceName string) vo.SelectOneHealthInstanceParam {
+	return vo.SelectOneHealthInstanceParam{
+		ServiceName: serviceName,
+		GroupName:   "DEFAULT_GROUP",
+	}
+}
+
+func buildServiceInstance(serviceName string, instance *model.Instance) string {
+	if instance == nil {
+		return fmt.Sprintf("service=%s instance=<nil>", serviceName)
+	}
+	return fmt.Sprintf("service=%s ip=%s port=%d healthy=%v enabled=%v", serviceName, instance.Ip, instance.Port, instance.Healthy, instance.Enable)
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/gorilla/handlers"
 	"github.com/reaburoa/micro-kit/cloud/config"
 	"github.com/reaburoa/micro-kit/cloud/server"
 	middleware "github.com/reaburoa/micro-kit/middleware/kratos"
@@ -40,6 +39,10 @@ func NewHttpWithName(srv string, middleware ...kmid.Middleware) *http.Server {
 }
 
 func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
+	if conf == nil {
+		conf = &server.Server{}
+	}
+
 	serverMiddleware := []kmid.Middleware{
 		recovery.Recovery(),
 		metrics.Server(
@@ -64,11 +67,7 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 		http.Logger(krtosLog.NewKratosLog()),
 		http.Address(httpDefaultAddr),
 		http.Timeout(httpDefaultTimeout),
-		http.Filter(handlers.CORS(
-			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"POST", "GET", "PUT", "DELETE", "HEAD", "UPDATE"}),
-			handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
-		)),
+		http.Filter(middleware.CORSFilter()),
 	}
 	if conf.Network != "" {
 		ops = append(ops, http.Network(conf.Network))
@@ -79,11 +78,15 @@ func newHttp(conf *server.Server, kmiddleware ...kmid.Middleware) *http.Server {
 	if conf.Timeout != "" {
 		duration, err := time.ParseDuration(conf.Timeout)
 		if err != nil {
-			panic(err.Error())
+			log.Warnf("invalid http timeout %q, use default %s: %v", conf.Timeout, httpDefaultTimeout, err)
+		} else {
+			ops = append(ops, http.Timeout(duration))
 		}
-		ops = append(ops, http.Timeout(duration))
 	}
 	srv := http.NewServer(ops...)
+	if err := server.AutoRegisterWithNacos(conf); err != nil {
+		log.Warnf("auto register http server with nacos failed: %v", err)
+	}
 
 	err := server.RunMetrics()
 	if err != nil {
