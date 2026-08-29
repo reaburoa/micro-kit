@@ -13,7 +13,7 @@ import (
 
 var (
 	metricsOnce sync.Once
-	pprofOnce  sync.Once
+	pprofOnce   sync.Once
 )
 
 func RunMetrics() error {
